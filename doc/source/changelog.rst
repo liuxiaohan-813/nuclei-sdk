@@ -3,11 +3,61 @@
 Changelog
 =========
 
+V0.8.1
+------
+
+This is release version of ``0.8.1`` of Nuclei SDK.
+
+* Application
+
+  - Remove ``-ffast-math`` for clang based toolchain since it is deprecated
+  - Update ``demo_cache`` optimization level to ``-O2`` and update its doc
+  - Fix ``demo_stack_check`` via modify evalsoc correct max exception number ``MAX_SYSTEM_EXCEPTION_NUM``
+  - Fix freertos demo case build fail when SMP=2 passed
+  - Fix CIDU/Vector/SMP information display in ``cpuinfo`` application
+
+* NMSIS
+
+  - Replace ``__ASSEMBLY__`` with ``__ASSEMBLER__`` to match with gcc predefined asm macro
+  - Optimize ``__STATIC_FORCEINLINE`` to ``__STATIC_INLINE`` in NMSIS Core header files to avoid un-necessary inline to save code size
+  - Bump NMSIS version to 1.4.1
+
+* SoC
+
+  - Update evalsoc linker script files to support RT-Thread v5.x
+  - Update SConscript to support RT-Thread v5.x
+  - Fix zcmt jvt section alignment and section name in evalsoc linker script files
+  - Fix evalsoc stubs.c compile fail in RT-Thread
+  - Fix evalsoc linker options in RT-Thread SConscript to fix link issue
+  - Fix instruction fetch not updated via fence.i after text section copied to cached area when program run in flash download mode
+  - Fix ``MAX_SYSTEM_EXCEPTION_NUM`` for evalsoc, it should be 26 not 19, which will fix ``demo_stack_check`` case
+
+* OS
+
+  - Add ilde task support in ThreadX when no thread is available, by default threadx dont have a idle task
+  - Set threadx ``ra`` with proper routine when thread terminated
+
+* Components
+
+  - Fix profiling component to support gcc 14.x
+
+* Tools
+
+  - Update ``demo_pma`` case nsdk_cli checker to match its design
+  - Add filter configuration feature in nsdk_cli tools, you can filter certain arches which you dont want to run via ``SDK_IGNORED_EXTS`` environment variable
+  - Add filter configuration feature in nsdk_cli tools, you can allow only arches supported to run via ``SDK_SUPPORT_ARCH`` environment variable
+  - Add full_norvv cpu json, and make it as default cpu configurations used by fpga benchmark
+
+* Documentation
+
+  - Fix build system :ref:`develop_buildsystem_var_core` support table format error
+
 V0.8.0
 ------
 
 .. note::
 
+    - Please use ``Nuclei Studio 2025.02`` with v0.8.0 and later version.
     - Two new benchmark cases ``dhrystone_v2.2`` and ``whetstone_v1.2`` are added in this release.
     - In Nuclei Studio IDE, if you are importing this Nuclei SDK 0.8.0 as a NPK package, you will be able to see following versions in new project wizard:
 
