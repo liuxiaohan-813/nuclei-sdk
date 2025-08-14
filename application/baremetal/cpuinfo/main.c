@@ -191,7 +191,9 @@ void nuclei_cpuinfo(void)
         printf(" VNICE");
     }
     show_safety_mechanism(mcfg.b.safety_mecha);
-    show_vpu_degree(mcfg.b.vpu_degree);
+    if (csr_misa & BIT(21)) {
+        show_vpu_degree(mcfg.b.vpu_degree);
+    }
     printf("\r\n");
 
     /* ILM */
@@ -249,7 +251,7 @@ void nuclei_cpuinfo(void)
         printf("         IREGION:");
         iregion_base = csr_mirgb & (~0x3FF);
         printf(" %#lx", iregion_base);
-        print_size(POWER_FOR_TWO(__RV_EXTRACT_FIELD(csr_mirgb, 0x1F << 1) - 1) * KB);
+        print_size(POWER_FOR_TWO(__RV_EXTRACT_FIELD(csr_mirgb, 0x3F << 1) - 1) * KB);
         printf("\r\n");
         printf("                  Unit        Size        Address\r\n");
         printf("                  INFO        64KB        %#lx\r\n", iregion_base + IREGION_IINFO_OFS);
@@ -262,7 +264,7 @@ void nuclei_cpuinfo(void)
             printf("                  SMP         64KB        %#lx\r\n", iregion_base + IREGION_SMP_OFS);
         }
         rv_csr_t smp_cfg = *(rv_csr_t*)(iregion_base + 0x40004);
-        if (mcfg.b.clic && (__RV_EXTRACT_FIELD(smp_cfg, 0x1F << 1) >= 2)) {
+        if (mcfg.b.clic && (__RV_EXTRACT_FIELD(smp_cfg, 0x1F << 1) >= 1)) {
             printf("                  CIDU        64KB        %#lx\r\n", iregion_base + IREGION_IDU_OFS);
         }
         if (mcfg.b.plic) {
@@ -272,7 +274,7 @@ void nuclei_cpuinfo(void)
         if (mcfg.b.smp) {
             printf("         SMP_CFG:");
             printf(" CC_PRESENT=%ld", __RV_EXTRACT_FIELD(smp_cfg, 0x1));
-            printf(" SMP_CORE_NUM=%ld", __RV_EXTRACT_FIELD(smp_cfg, 0x3F << 1));
+            printf(" SMP_NUM=%ld", __RV_EXTRACT_FIELD(smp_cfg, 0x3F << 1) + 1);
             printf(" IOCP_NUM=%ld", __RV_EXTRACT_FIELD(smp_cfg, 0x3F << 7));
             printf(" PMON_NUM=%ld", __RV_EXTRACT_FIELD(smp_cfg, 0x3F << 13));
             printf("\r\n");

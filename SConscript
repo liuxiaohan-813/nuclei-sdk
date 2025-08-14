@@ -78,6 +78,8 @@ SoC_Common = 'SoC/{}/Common'.format(build_soc)
 SoC_Board = 'SoC/{}/Board/{}'.format(build_soc, build_board)
 
 build_core_options = " -march=%s -mabi=%s -mcmodel=%s " % (build_march, build_mabi, build_mcmodel)
+# required by rt-thread v5
+rtconfig.DEVICE = build_core_options
 
 rtconfig.NUCLEI_SDK_OPENOCD_CFG = os.path.join(FRAMEWORK_DIR, \
     "SoC", build_soc, "Board", build_board, "openocd_{}.cfg".format(build_soc))
@@ -143,7 +145,7 @@ if build_download_mode_upper == "FLASH":
     CPPDEFINES.extend(['-DVECTOR_TABLE_REMAPPED'])
 
 extra_flags = build_core_options
-extra_lflags = "{} -T {}".format(build_core_options, build_ldscript)
+extra_lflags = "{} -L {} -T {}".format(build_core_options, os.path.dirname(build_ldscript), build_ldscript)
 
 # rtconfig.CFLAGS = "{} {}".format(build_core_options, rtconfig.CFLAGS)
 # rtconfig.AFLAGS = "{} {}".format(build_core_options, rtconfig.AFLAGS)

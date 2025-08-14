@@ -34,8 +34,15 @@ _tx_thread_schedule:
        Interrupt stack pointer is stored in CSR_MSCRATCH */
     la t0, CSTACK$$Limit
     csrw CSR_MSCRATCH, t0
+    /* Enable interrupt to wait _tx_thread_execute_ptr is not null */
+    csrsi CSR_MSTATUS, MSTATUS_MIE
+_tx_thread_schedule_loop:
     la a0, _tx_thread_execute_ptr   /* Pick current thread to a0 */
     LOAD a0, 0(a0)
+    beqz a0, _tx_thread_schedule_loop
+_tx_thread_schedule_ready:
+    /* Disable interrupt to load first thread */
+    csrci CSR_MSTATUS, MSTATUS_MIE
     la a1, _tx_thread_current_ptr  /* _tx_thread_current_ptr = _tx_thread_execute_ptr */
     STORE a0, 0(a1)
     LOAD sp, 2  * REGBYTES(a0)      /* Read sp from _tx_thread_execute_ptr -> tx_thread_stack_ptr */
@@ -122,14 +129,17 @@ eclic_msip_handler:
 
     /* Push additional registers */
 
-    /* Store sp to task stack to _tx_thread_current_ptr -> tx_thread_stack_ptr*/
+    /* If _tx_thread_current_ptr is null, no sp need to be saved */
     la t0, _tx_thread_current_ptr
     LOAD t0, 0(t0)
+    beqz t0, _tx_thread_switch
+    /* Store sp to task stack to _tx_thread_current_ptr -> tx_thread_stack_ptr */
     STORE sp, 2 * REGBYTES(t0)
-
+    /* Store last pc to thread stack */
     csrr t0, CSR_MEPC
     STORE t0, 0(sp)
 
+_tx_thread_switch:
     jal PortThreadSwitch
 
     /* Switch task context to _tx_thread_execute_ptr */

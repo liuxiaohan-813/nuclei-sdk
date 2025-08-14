@@ -240,13 +240,13 @@ typedef void (*EXC_HANDLER)(unsigned long cause, unsigned long sp);
 typedef void (*INT_HANDLER)(unsigned long cause, unsigned long sp);
 
 /** \brief Max exception handler number, don't include the NMI(0xFFF) one */
-#define MAX_SYSTEM_EXCEPTION_NUM        20
+#define MAX_SYSTEM_EXCEPTION_NUM        26
 /**
  * \brief      Store the exception handlers for each exception ID
  * \note
  * - This SystemExceptionHandlers are used to store all the handlers for all
  * the exception codes Nuclei N/NX core provided.
- * - Exception code 0 - 19, totally 20 exceptions are mapped to SystemExceptionHandlers[0:19]
+ * - Exception code 0 - MAX_SYSTEM_EXCEPTION_NUM, totally MAX_SYSTEM_EXCEPTION_NUM + 1 exceptions are mapped to SystemExceptionHandlers[0:MAX_SYSTEM_EXCEPTION_NUM]
  * - Exception for NMI is also re-routed to exception handling(exception code 0xFFF) in startup code configuration, the handler itself is mapped to SystemExceptionHandlers[MAX_SYSTEM_EXCEPTION_NUM]
  */
 static unsigned long SystemExceptionHandlers[MAX_SYSTEM_EXCEPTION_NUM + 1];
@@ -269,7 +269,7 @@ static INT_HANDLER system_core_interrupt_handler = NULL;
  * \note
  * - This SystemExceptionHandlers_S are used to store all the handlers for all
  * the exception codes Nuclei N/NX core provided.
- * - Exception code 0 - 19, totally 20 exceptions are mapped to SystemExceptionHandlers_S[0:19]
+ * - Exception code 0 - MAX_SYSTEM_EXCEPTION_NUM, totally MAX_SYSTEM_EXCEPTION_NUM + 1 exceptions are mapped to SystemExceptionHandlers_S[0:MAX_SYSTEM_EXCEPTION_NUM]
  */
 #if (defined(__SMODE_PRESENT) && (__SMODE_PRESENT == 1))
 static unsigned long SystemExceptionHandlers_S[MAX_SYSTEM_EXCEPTION_NUM];
@@ -1444,12 +1444,12 @@ void _premain_init(void)
     if ( (hartid == BOOT_HARTID) && ((mcfginfo & (0x1 << 11)) && (SMP_CTRLREG(__SMPCC_BASEADDR, 0x4) & 0x1)) ) { // L2 Cache present
 #if RUNMODE_L2_EN == 1
         // Enable L2, disable cluster local memory
-        SMP_CTRLREG(__SMPCC_BASEADDR, 0x10) = 0x1;
+        SMP_CTRLREG(__SMPCC_BASEADDR, 0x10) |= 0x1;
         SMP_CTRLREG(__SMPCC_BASEADDR, 0xd8) = 0x0;
         __SMP_RWMB();
 #else
         // Disable L2, enable cluster local memory
-        SMP_CTRLREG(__SMPCC_BASEADDR, 0x10) = 0x0;
+        SMP_CTRLREG(__SMPCC_BASEADDR, 0x10) &= ~0x1;
         // use as clm or cache, when l2 disable, the affect to ddr is the same, l2 is really disabled
         SMP_CTRLREG(__SMPCC_BASEADDR, 0xd8) = 0;//0xFFFFFFFF;
         __SMP_RWMB();
